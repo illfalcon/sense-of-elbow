@@ -7,7 +7,7 @@ from database.sqlite import MyDatabase
 db = MyDatabase()
 db.start()
 depth = 2
-url = "http://gaoordi.ru/news/"
+url = "http://kdobru.ru/"
 visited = {url}
 queue = deque([(url, 0)])
 

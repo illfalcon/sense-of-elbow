@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 from urllib.parse import urlsplit, urljoin
 import hashlib
 import html2text
-
+import datetime
 
 def is_webpage(url):
     r = requests.head(url)
@@ -24,7 +24,7 @@ def is_url_relevant(url, host):
 
 
 def crawl(depth, queue, visited, db):
-    if len(queue) > 0:
+    while len(queue) > 0:
         url, stage = queue.popleft()
         print(url, ' ', stage)
         if stage <= depth:
@@ -37,10 +37,11 @@ def crawl(depth, queue, visited, db):
             h = find_hash(clean_text)
             old = db.get_url_hash(url)
             if old == h:
-                return
+                continue
             db.set_url_unparsed(url)
             db.set_url_hash(h, url)
-            # parse(text)
+            parse(text, url, db)
+            db.set_url_parsed(url)
             for link in BeautifulSoup(r.content, 'html.parser', parse_only=SoupStrainer('a')):
                 if link.has_attr('href'):
                     new_url = urljoin(url, link['href'])
@@ -51,11 +52,10 @@ def crawl(depth, queue, visited, db):
                         if is_url_relevant(new_url, host):
                             if is_webpage(new_url):
                                 queue.append((new_url, stage + 1))
-            crawl(depth, queue, visited, db)
+            # crawl(depth, queue, visited, db)
 
 
-
-def parse(html):
+def parse(html, url, db):
     doc = extractor.parse_html(html)
     lines = doc.split('\n')
     for i, line in enumerate(lines):
@@ -64,9 +64,16 @@ def parse(html):
         if len(filtered_dates) != 0:
             eventtext = eventfinder.find_event(lines, i)
             if eventtext != "":
-                print("line:\n", line, '\n')
-                print('event:')
-                print(eventtext, '\n', filtered_dates, '\n\n')
+                parsed_year = filtered_dates[0].fact.year
+                year = parsed_year if parsed_year is not None else datetime.datetime.now().year
+                month = filtered_dates[0].fact.month
+                day = filtered_dates[0].fact.day
+                date = datetime.date(year, month, day)
+                h = find_hash(eventtext)
+                db.add_event(eventtext, h, url, date)
+                # print("line:\n", line, '\n')
+                # print('event:')
+                # print(eventtext, '\n', filtered_dates, '\n\n')
 
 
 def find_hash(text):
