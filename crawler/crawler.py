@@ -4,6 +4,7 @@ from ner import eventfinder
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 from urllib.parse import urlsplit, urljoin
+import hashlib
 
 
 def is_webpage(url):
@@ -21,7 +22,7 @@ def is_url_relevant(url, host):
     return False
 
 
-def crawl(depth, queue, visited):
+def crawl(depth, queue, visited, db):
     if len(queue) > 0:
         url, stage = queue.popleft()
         print(url, ' ', stage)
@@ -56,3 +57,7 @@ def parse(html):
                 print('event:')
                 print(eventtext, '\n', filtered_dates, '\n\n')
 
+
+def find_hash(text):
+    hash_obj = hashlib.md5(text.encode())
+    return hash_obj.hexdigest()
