@@ -28,6 +28,7 @@ def crawl(depth, queue, visited, db):
         url, stage = queue.popleft()
         print(url, ' ', stage)
         if stage <= depth:
+            # TODO: add if modified check
             r = requests.get(url)
             text = r.text
             clean_text = html2text.html2text(text)

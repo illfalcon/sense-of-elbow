@@ -90,7 +90,7 @@ class MyDatabase:
         )
         self.con.commit()
 
-    #TODO: Add logic to check semantic similarity
+    # TODO: Add logic to check semantic similarity
     def contains_event(self, hash):
         self.cursor_obj.execute(
             "select count(*) from events where hash = ?", (hash, )
