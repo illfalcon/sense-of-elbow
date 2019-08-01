@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup, SoupStrainer
 from urllib.parse import urlsplit, urljoin
 import hashlib
+import html2text
 
 
 def is_webpage(url):
@@ -29,7 +30,16 @@ def crawl(depth, queue, visited, db):
         if stage <= depth:
             r = requests.get(url)
             text = r.text
-            parse(text)
+            clean_text = html2text.html2text(text)
+            if not db.contains_url(url):
+                db.add_url(url, "")
+            h = find_hash(clean_text)
+            old = db.get_url_hash(url)
+            if old == h:
+                return
+            db.set_url_unparsed(url)
+            db.set_url_hash(h, url)
+            # parse(text)
             for link in BeautifulSoup(r.content, 'html.parser', parse_only=SoupStrainer('a')):
                 if link.has_attr('href'):
                     new_url = urljoin(url, link['href'])
@@ -40,7 +50,7 @@ def crawl(depth, queue, visited, db):
                         if is_url_relevant(new_url, host):
                             if is_webpage(new_url):
                                 queue.append((new_url, stage + 1))
-            crawl(depth, queue, visited)
+            crawl(depth, queue, visited, db)
 
 
 
@@ -59,5 +69,5 @@ def parse(html):
 
 
 def find_hash(text):
-    hash_obj = hashlib.md5(text.encode())
+    hash_obj = hashlib.sha1(text.encode())
     return hash_obj.hexdigest()

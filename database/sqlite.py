@@ -34,7 +34,7 @@ class MyDatabase:
 
     def add_landing(self, url, hash, name):
         self.cursor_obj.execute(
-            "INSERT into landings (url, hash, name) VALUES (?, ?, ?)", url, hash, name
+            "INSERT into landings (url, hash, name) VALUES (?, ?, ?)", (url, hash, name)
         )
         self.con.commit()
 
@@ -48,54 +48,54 @@ class MyDatabase:
 
     def add_url(self, url, hash):
         self.cursor_obj.execute(
-            "INSERT into webpages (url, hash, parsed) VALUES (?, ?, ?)", url, hash, 0
+            "INSERT into webpages (url, hash, parsed) VALUES (?, ?, ?)", (url, hash, 0)
         )
         self.con.commit()
 
     def contains_url(self, url):
         self.cursor_obj.execute(
-            "select count(*) from webpages where url = ?", url
+            "select count(*) from webpages where url = ?", (url, )
         )
-        res = self.cursor_obj.fetch_one[0]
+        res = self.cursor_obj.fetchone()[0]
         return res != 0
 
     def get_url_hash(self, url):
         self.cursor_obj.execute(
-            "select hash from webpages where url = ?", url
+            "select hash from webpages where url = ?", (url, )
         )
-        res = self.cursor_obj.fetch_one[0]
+        res = self.cursor_obj.fetchone()[0]
         return res
 
     def set_url_hash(self, hash, url):
         self.cursor_obj.execute(
-            "update webpages set hash = ? where url = ?", hash, url
+            "update webpages set hash = ? where url = ?", (hash, url)
         )
         self.con.commit()
 
     def set_url_parsed(self, url):
         self.cursor_obj.execute(
-            "update webpages set parsed = 1 where url = ?", url
+            "update webpages set parsed = 1 where url = ?", (url, )
         )
         self.con.commit()
 
     def set_url_unparsed(self, url):
         self.cursor_obj.execute(
-            "update webpages set parsed = 0 where url = ?", url
+            "update webpages set parsed = 0 where url = ?", (url, )
         )
         self.con.commit()
 
     def add_event(self, text, hash, url, date):
         self.cursor_obj.execute(
-            "INSERT into events (url, hash, article, event_date) values (?, ?, ?, ?)", url, hash, text, date
+            "INSERT into events (url, hash, article, event_date) values (?, ?, ?, ?)", (url, hash, text, date)
         )
         self.con.commit()
 
     #TODO: Add logic to check semantic similarity
     def contains_event(self, hash):
         self.cursor_obj.execute(
-            "select count(*) from events where hash = ?", hash
+            "select count(*) from events where hash = ?", (hash, )
         )
-        res = self.cursor_obj.fetch_one[0]
+        res = self.cursor_obj.fetchone()[0]
         return res != 0
 
     def get_unparsed_urls(self):
