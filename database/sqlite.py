@@ -32,6 +32,31 @@ class MyDatabase:
         self.sql_connection()
         self.sql_create_tables()
 
+    def create_visited(self):
+        self.cursor_obj.execute(
+            "CREATE TABLE IF NOT EXISTS visited (url TEXT NOT NULL)"
+        )
+        self.con.commit()
+
+    def visit_url(self, url):
+        self.cursor_obj.execute(
+            "INSERT into visited (url) VALUES (?)", (url, )
+        )
+        self.con.commit()
+
+    def was_visited(self, url):
+        self.cursor_obj.execute(
+            "select count(*) from visited where url = ?", (url,)
+        )
+        res = self.cursor_obj.fetchone()[0]
+        return res != 0
+
+    def drop_visited(self):
+        self.cursor_obj.execute(
+            "DROP TABLE IF EXISTS visited"
+        )
+        self.con.commit()
+
     def add_landing(self, url, hash, name):
         self.cursor_obj.execute(
             "INSERT into landings (url, hash, name) VALUES (?, ?, ?)", (url, hash, name)
@@ -105,5 +130,3 @@ class MyDatabase:
         rows = self.cursor_obj.fetch_all()
         res = list(row[0] for row in rows)
         return res
-
-

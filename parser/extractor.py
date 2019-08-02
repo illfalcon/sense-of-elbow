@@ -19,4 +19,7 @@ def parse_html(html_text):
     h.unicode_snob = True
     h.body_width = 0
     h.wrap_links = False
-    return normalize_newlines(doc.title() + '\n' + h.handle(doc.summary()))
+    try:
+        return normalize_newlines(doc.title() + '\n' + h.handle(doc.summary()))
+    except:
+        return ""
