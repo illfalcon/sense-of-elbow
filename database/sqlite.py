@@ -5,8 +5,8 @@ from sqlite3 import Error
 
 
 class Event:
-    def __init__(self, row_id, url, article, event_date):
-        self.row_id = row_id
+    def __init__(self, rowid, url, article, event_date):
+        self.rowid = rowid
         self.url = url
         self.article = article
         self.event_date = event_date
@@ -79,7 +79,7 @@ class MyDatabase:
         self.cursor_obj.execute(
             "select url from landings"
         )
-        rows = self.cursor_obj.fetch_all()
+        rows = self.cursor_obj.fetchall()
         res = list(row[0] for row in rows)
         return res
 
@@ -139,7 +139,7 @@ class MyDatabase:
         self.cursor_obj.execute(
             "select url from webpages where parsed = 0"
         )
-        rows = self.cursor_obj.fetch_all()
+        rows = self.cursor_obj.fetchall()
         res = list(row[0] for row in rows)
         return res
 
@@ -160,7 +160,7 @@ class MyDatabase:
         self.cursor_obj.execute(
             "select rowid, url, article, event_date from events where event_date >= ?", (datetime.date(year, month, day),)
         )
-        rows = self.cursor_obj.fetch_all()
+        rows = self.cursor_obj.fetchall()
         res = []
         if rows is not None:
             for r in rows:
@@ -176,7 +176,7 @@ class MyDatabase:
             "select rowid, url, article, event_date from events where event_date < ?",
             (datetime.date(year, month, day),)
         )
-        rows = self.cursor_obj.fetch_all()
+        rows = self.cursor_obj.fetchall()
         res = []
         if rows is not None:
             for r in rows:

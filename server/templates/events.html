@@ -1,5 +1,25 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Hello!!!</h1>
+{% for event in events|sort(attribute='event_date') %}
+<div class="row justify-content-md-center">
+    <div class="col-md-6 event card border-primary">
+        <div>{{ event.event_date }}</div>
+        <p id="{{ event.rowid }}">
+            {{ event.article }}
+        </p>
+<!--        <a role="button" class="collapsed" data-toggle="collapse" href="#collapse-{{ event.rowid }}" aria-expanded="false" aria-controls="collapse-{{ event.rowid }}">-->
+<!--            Подробнее-->
+<!--        </a>-->
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-success col-4">Принять</button>
+            <button type="button" class="btn btn-danger col-4">Отклонить</button>
+            <button type="button" class="btn btn-warning col-4">Редактировать</button>
+        </div>
+        <div>
+            <a href="{{ event.url }}">{{ event.url|truncate(30, True) }}</a>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

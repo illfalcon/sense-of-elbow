@@ -25,11 +25,11 @@ def login_post():
         flash('Проверьте введённые данные и попробуйте снова.')
         return redirect(url_for('auth.login'))
     login_user(User(res_login), remember=True)
-    return redirect(url_for('main.events'))
+    return redirect(url_for('main.new_events'))
 
 
 @auth.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('main.events'))
+    return redirect(url_for('main.new_events'))
