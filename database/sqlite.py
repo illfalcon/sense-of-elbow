@@ -1,6 +1,15 @@
 import sqlite3
+import datetime
 
 from sqlite3 import Error
+
+
+class Event:
+    def __init__(self, row_id, url, article, event_date):
+        self.row_id = row_id
+        self.url = url
+        self.article = article
+        self.event_date = event_date
 
 
 class MyDatabase:
@@ -10,7 +19,7 @@ class MyDatabase:
 
     def sql_connection(self):
         try:
-            self.con = sqlite3.connect('mydatabase.db')
+            self.con = sqlite3.connect('mydatabase.db', check_same_thread=False)
             self.cursor_obj = self.con.cursor()
         except Error:
             print(Error)
@@ -25,6 +34,9 @@ class MyDatabase:
         self.cursor_obj.execute(
             "CREATE TABLE IF NOT EXISTS events (url TEXT NOT NULL, hash TEXT NOT NULL, article TEXT NOT NULL, "
             "approved INTEGER, event_date TEXT)"
+        )
+        self.cursor_obj.execute(
+            "CREATE TABLE IF NOT EXISTS users (login TEXT NOT NULL, password TEXT NOT NULL)"
         )
         self.con.commit()
 
@@ -130,3 +142,61 @@ class MyDatabase:
         rows = self.cursor_obj.fetch_all()
         res = list(row[0] for row in rows)
         return res
+
+    def get_user_by_login(self, login):
+        self.cursor_obj.execute(
+            "select * from users where login = ?", (login,)
+        )
+        res = self.cursor_obj.fetchone()
+        if res is not None:
+            return res[0], res[1]
+        return None, None
+
+    def get_relevant_events(self):
+        n = datetime.datetime.now()
+        year = n.year
+        month = n.month
+        day = n.day
+        self.cursor_obj.execute(
+            "select rowid, url, article, event_date from events where event_date >= ?", (datetime.date(year, month, day),)
+        )
+        rows = self.cursor_obj.fetch_all()
+        res = []
+        if rows is not None:
+            for r in rows:
+                res.append(Event(r[0], r[1], r[2], r[3]))
+        return res
+
+    def get_irrelevant_events(self):
+        n = datetime.datetime.now()
+        year = n.year
+        month = n.month
+        day = n.day
+        self.cursor_obj.execute(
+            "select rowid, url, article, event_date from events where event_date < ?",
+            (datetime.date(year, month, day),)
+        )
+        rows = self.cursor_obj.fetch_all()
+        res = []
+        if rows is not None:
+            for r in rows:
+                res.append(Event(r[0], r[1], r[2], r[3]))
+        return res
+
+    def set_event_approved(self, rowid):
+        self.cursor_obj.execute(
+            "update events set approved = 1 where rowid = ?", (rowid,)
+        )
+        self.con.commit()
+
+    def set_event_unapproved(self, rowid):
+        self.cursor_obj.execute(
+            "update events set approved = 0 where rowid = ?", (rowid,)
+        )
+        self.con.commit()
+
+    def update_event_text(self, rowid, text):
+        self.cursor_obj.execute(
+            "update events set article = ? where rowid = ?", (text, rowid)
+        )
+        self.con.commit()
