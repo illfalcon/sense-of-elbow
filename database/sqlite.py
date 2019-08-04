@@ -12,6 +12,11 @@ class Event:
         self.event_date = event_date
 
 
+class Landing:
+    def __init__(self, rowid, url):
+        self.rowid = rowid
+        self.url = url
+
 class MyDatabase:
     def __init__(self):
         self.con = None
@@ -75,12 +80,21 @@ class MyDatabase:
         )
         self.con.commit()
 
+    def remove_landing(self, rowid):
+        self.cursor_obj.execute(
+            "delete from landings where rowid = ?", (rowid, )
+        )
+        self.con.commit()
+
     def get_all_landings(self):
         self.cursor_obj.execute(
-            "select url from landings"
+            "select rowid, url from landings"
         )
         rows = self.cursor_obj.fetchall()
-        res = list(row[0] for row in rows)
+        res = []
+        if rows is not None:
+            for r in rows:
+                res.append(Landing(r[0], r[1]))
         return res
 
     def add_url(self, url, hash):

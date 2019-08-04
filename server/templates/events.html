@@ -5,31 +5,21 @@
 <div class="row justify-content-center">
     <div class="col-md-6 col-8 event card border-primary">
         <div>{{ event.event_date }}</div>
-        <p class="more" id="{{ event.rowid }}">
+        <p class="more">
             {{ event.article }}
         </p>
 <!--        <a role="button" class="collapsed" data-toggle="collapse" href="#collapse-{{ event.rowid }}" aria-expanded="false" aria-controls="collapse-{{ event.rowid }}">-->
 <!--            Подробнее-->
 <!--        </a>-->
         <div class="btn-group" role="group">
-            <button type="button" class="btn btn-success col-4">Принять</button>
-            <button type="button" class="btn btn-danger col-4">Отклонить</button>
-            <button type="button" class="btn btn-warning col-4">Редактировать</button>
+            <button type="button" onclick="approveEvent({{ event.rowid }})" class="btn btn-success">Принять</button>
+            <button type="button" onclick="declineEvent({{ event.rowid }})" class="btn btn-danger">Отклонить</button>
+<!--            <button type="button" class="btn btn-warning col-4">Редактировать</button>-->
         </div>
         <div>
             <a href="{{ event.url }}">{{ event.url|truncate(30, True) }}</a>
         </div>
     </div>
 </div>
-
-<script language="javascript">
-$(document).ready(function() {
-
-	$(".comment").shorten();
-
-	$(".comment-small").shorten({showChars: 10});
-
- });
-</script>
 {% endfor %}
 {% endblock %}

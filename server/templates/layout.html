@@ -22,7 +22,12 @@
           <a class="nav-item nav-link" href="/approved_events">Принятые события</a>
           <a class="nav-item nav-link" href="/declined_events">Отклонённые события</a>
           <a class="nav-item nav-link" href="/landings">Сайты</a>
-          <a class="nav-item nav-link" href="/logout">Выйти</a>
+            {% if crawling %}
+                      <button class="nav-item btn btn-primary" disabled>Обновляется</button>
+            {% else %}
+            <button class="nav-item btn btn-primary" onclick="refresh()">Обновить</button>
+            {% endif %}
+            <a class="nav-item nav-link" href="/logout">Выйти</a>
         </div>
       </div>
     </nav>

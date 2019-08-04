@@ -4,7 +4,6 @@ from database.sqlite import MyDatabase
 from flask_login import LoginManager
 from .models import User
 
-
 app = Flask(__name__)
 app.config.from_object(Config)
 

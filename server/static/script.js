@@ -1,3 +1,37 @@
+function approveEvent(rowid) {
+    const request = new XMLHttpRequest();
+    request.open('POST', '/approve_event');
+    request.onload = function() {
+        window.location.reload(true);
+    }
+    const form = new FormData();
+    form.append('rowid', rowid);
+    request.send(form);
+    return false;
+}
+
+function refresh() {
+    const request = new XMLHttpRequest();
+    request.open('POST', '/refresh');
+    request.onload = function() {
+        window.location.reload(true);
+    }
+    request.send()
+    return false;
+}
+
+function declineEvent(rowid) {
+    const request = new XMLHttpRequest();
+    request.open('POST', '/decline_event');
+    request.onload = function() {
+        window.location.reload(true);
+    }
+    const form = new FormData();
+    form.append('rowid', rowid);
+    request.send(form);
+    return false;
+}
+
 $(document).ready(function() {
     // Configure/customize these variables.
     var showChar = 200;  // How many characters are shown by default

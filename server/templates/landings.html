@@ -1,5 +1,32 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>World!!!</h1>
+<h2> Сайты </h2>
+    <form action="/add_landing" method="post" id="add_landing"></form>
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width: 55%" scope="col">Ссылка</th>
+          <th style="width: 10%" scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+    {% for landing in landings %}
+    <tr>
+      <td><a href="#" class = "mb-0" >{{ landing.url }}</a></td>
+      <td>
+      <form action="/delete_landing" method="post">
+       <input type="hidden" name="rowid" value="{{ landing.rowid }}" />
+       <input class="btn btn-danger" type="submit" value="Удалить" />
+      </form>
+    </td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td><input type="text" class="form-control" name="url" form="add_landing" /></td>
+        <td><input class="btn btn-success" type="submit" value="Добавить" form="add_landing" /></td>
+    </tr>
+    </tbody>
+    </table>
+
 {% endblock %}
