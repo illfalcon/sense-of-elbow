@@ -158,7 +158,7 @@ class MyDatabase:
         month = n.month
         day = n.day
         self.cursor_obj.execute(
-            "select rowid, url, article, event_date from events where event_date >= ?", (datetime.date(year, month, day),)
+            "select rowid, url, article, event_date from events where event_date >= ? and approved is null", (datetime.date(year, month, day),)
         )
         rows = self.cursor_obj.fetchall()
         res = []
@@ -173,7 +173,7 @@ class MyDatabase:
         month = n.month
         day = n.day
         self.cursor_obj.execute(
-            "select rowid, url, article, event_date from events where event_date < ?",
+            "select rowid, url, article, event_date from events where event_date < ? and approved is null",
             (datetime.date(year, month, day),)
         )
         rows = self.cursor_obj.fetchall()
@@ -200,3 +200,25 @@ class MyDatabase:
             "update events set article = ? where rowid = ?", (text, rowid)
         )
         self.con.commit()
+
+    def get_approved_events(self):
+        self.cursor_obj.execute(
+            "select rowid, url, article, event_date from events where approved == 1"
+        )
+        rows = self.cursor_obj.fetchall()
+        res = []
+        if rows is not None:
+            for r in rows:
+                res.append(Event(r[0], r[1], r[2], r[3]))
+        return res
+
+    def get_declined_events(self):
+        self.cursor_obj.execute(
+            "select rowid, url, article, event_date from events where approved == 0"
+        )
+        rows = self.cursor_obj.fetchall()
+        res = []
+        if rows is not None:
+            for r in rows:
+                res.append(Event(r[0], r[1], r[2], r[3]))
+        return res

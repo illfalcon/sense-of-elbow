@@ -2,10 +2,10 @@
 
 {% block content %}
 {% for event in events|sort(attribute='event_date') %}
-<div class="row justify-content-md-center">
-    <div class="col-md-6 event card border-primary">
+<div class="row justify-content-center">
+    <div class="col-md-6 col-8 event card border-primary">
         <div>{{ event.event_date }}</div>
-        <p id="{{ event.rowid }}">
+        <p class="more" id="{{ event.rowid }}">
             {{ event.article }}
         </p>
 <!--        <a role="button" class="collapsed" data-toggle="collapse" href="#collapse-{{ event.rowid }}" aria-expanded="false" aria-controls="collapse-{{ event.rowid }}">-->
@@ -21,5 +21,15 @@
         </div>
     </div>
 </div>
+
+<script language="javascript">
+$(document).ready(function() {
+
+	$(".comment").shorten();
+
+	$(".comment-small").shorten({showChars: 10});
+
+ });
+</script>
 {% endfor %}
 {% endblock %}

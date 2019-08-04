@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
     <link rel= "stylesheet" type="text/css" href= "{{ url_for('static',filename='event.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="{{ url_for('static',filename='script.js') }}"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -15,16 +17,16 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-          <a class="nav-item nav-link" href="/new_events">Свежие События</a>
-          <a class="nav-item nav-link" href="/past_events">Прошедшие События</a>
-          <a class="nav-item nav-link" href="/acccepted_events">Принятые События</a>
-          <a class="nav-item nav-link" href="/declined_events">Отклонённые События</a>
+          <a class="nav-item nav-link" href="/new_events">Свежие события</a>
+          <a class="nav-item nav-link" href="/past_events">Прошедшие события</a>
+          <a class="nav-item nav-link" href="/approved_events">Принятые события</a>
+          <a class="nav-item nav-link" href="/declined_events">Отклонённые события</a>
           <a class="nav-item nav-link" href="/landings">Сайты</a>
           <a class="nav-item nav-link" href="/logout">Выйти</a>
         </div>
       </div>
     </nav>
-    <div class="container">
+    <div class="container-fluid">
 
     {% block content %}
     {% endblock %}

@@ -1,3 +1,14 @@
 .event {
     margin: 10px;
 }
+
+.btn-group {
+    margin: 5px;
+}
+
+.morecontent span {
+    display: none;
+}
+.morelink {
+    display: block;
+}

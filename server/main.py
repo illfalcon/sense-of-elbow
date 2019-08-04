@@ -24,6 +24,20 @@ def past_events():
     return render_template("events.html", events=events)
 
 
+@main.route('/approved_events')
+@login_required
+def approved_events():
+    events = db.get_approved_events()
+    return render_template("events.html", events=events)
+
+
+@main.route('/declined_events')
+@login_required
+def declined_events():
+    events = db.get_declined_events()
+    return render_template("events.html", events=events)
+
+
 @main.route('/landings')
 @login_required
 def landings():
