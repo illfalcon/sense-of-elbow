@@ -23,12 +23,12 @@ def contains_invitation(string):
 def find_event(lines, beg):
     up = beg
     down = beg
-    while beg - up < 5 | up >= 0:
-        if contains_invitation(lines[up]):
-            return '\n'.join(lines[up:beg+1])
-        up -= 1
-    while down - beg < 7 | down < len(lines):
+    while down - beg < 4 | down < len(lines):
         if contains_invitation(lines[down]):
             return '\n'.join(lines[beg:down+1])
         down += 1
+    while beg - up < 4 | up >= 0:
+        if contains_invitation(lines[up]):
+            return '\n'.join(lines[up:beg+1])
+        up -= 1
     return ""

@@ -50,6 +50,7 @@ def crawl(depth, queue, db):
                     print("exception occurred", e)
                     continue
                 clean_text = html2text.html2text(r.text)
+                # print(r.text)
                 h = find_hash(clean_text)
                 old = db.get_url_hash(url)
                 if old == h:
@@ -68,14 +69,16 @@ def crawl(depth, queue, db):
                             if is_url_relevant(new_url, host):
                                 if is_webpage(new_url):
                                     queue.append((new_url, stage + 1))
-        except:
+        except Exception as e:
+            print(e)
             continue
     db.drop_visited()
 
 
 def parse(html, url, db):
     doc = extractor.parse_html(html)
-    events = extractor.extract_events(doc)
+    # events = extractor.extract_events(doc)
+    events = extractor.extract_events_better(doc, url)
     for e in events:
         eventtext = e[0]
         date = e[1]

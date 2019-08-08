@@ -96,6 +96,6 @@ def refresh():
 def start_crawling():
     row_urls = db.get_all_landings()
     urls = list(u.url for u in row_urls)
-    depth = 2
+    depth = 1
     queue = deque([(url, 0) for url in urls])
     crawler.crawl(depth, queue, db)

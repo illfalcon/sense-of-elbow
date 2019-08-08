@@ -5,6 +5,7 @@ from ner import datefinder, eventfinder
 import datetime
 from calendar import monthrange
 from utils.str import remove_tuples
+from urllib.parse import urlsplit
 
 
 def normalize_newlines(text):
@@ -58,12 +59,56 @@ def extract_events(doc):
     return res
 
 
-def find_year(dates):
+def year_from_url(url):
+    pattern = re.compile("[1-3][0-9]{3}")
+    res = urlsplit(url).path
+    match = re.search(pattern, res)
+    if match is not None:
+        return int(match.group(0))
+    return None
+
+
+def extract_events_better(doc, url):
+    all_dates = datefinder.find_dates(doc)
+    lines = doc.split('\n')
+    year_in_case = year_from_url(url)
+    res = list()
+    default_year = find_year(all_dates, year_in_case)
+    for i, line in enumerate(lines):
+        dates = datefinder.find_dates(line)
+        filtered_dates = list(filter(lambda d: (d.fact.day is not None) & (d.fact.month is not None), dates))
+        if len(filtered_dates) != 0:
+            eventtext = eventfinder.find_event(lines, i)
+            if eventtext != "":
+                y = find_year(dates, default_year)
+                filtered_dates.sort(key=lambda d: (d.fact.year if d.fact.year is not None
+                                                   else y,
+                                                   d.fact.month, d.fact.day), reverse=True)
+
+                year = filtered_dates[0].fact.year if filtered_dates[0].fact.year is not None else y
+                month = filtered_dates[0].fact.month
+                day = filtered_dates[0].fact.day
+                try:
+                    date = datetime.date(year, month, day)
+                except ValueError:
+                    if month > 12:
+                        month = 12
+                    _, day = monthrange(year, month)
+                    date = datetime.date(year, month, day)
+                res.append((eventtext, date))
+    remove_tuples(res)
+    return res
+
+
+def find_year(dates, default_year):
     year = 0
     for d in dates:
         if d.fact.year is not None:
             if d.fact.year > year:
                 year = d.fact.year
     if year == 0:
-        year = datetime.datetime.now().year
+        if default_year is not None:
+            year = default_year
+        else:
+            year = datetime.datetime.now().year
     return year
