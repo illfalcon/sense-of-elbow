@@ -5,14 +5,18 @@ from urllib.parse import urlsplit, urljoin
 import html2text
 import datetime
 from utils.str import find_hash
+import magic
 
 
 def is_webpage(url):
     try:
-        r = requests.head(url, timeout=5)
-        if 'content-type' in r.headers:
-            if 'html' in r.headers['content-type']:
-                return True
+        m = ''
+        r = requests.get(url, timeout=5, stream=True)
+        for chunk in r.iter_content(chunk_size=100):
+            m = magic.from_buffer(chunk, mime=True)
+            break
+        if 'html' in m:
+            return True
     except requests.exceptions.Timeout:
         print("request timed out: ", url)
         return False

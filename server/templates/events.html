@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
-{% for event in events|sort(attribute='event_date') %}
+{% for event in events %}
 <div class="row justify-content-center">
     <div class="col-md-6 col-8 event card border-primary">
         <div>{{ event.event_date }}</div>

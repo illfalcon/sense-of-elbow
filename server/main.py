@@ -9,6 +9,7 @@ from multiprocessing import Process
 main = Blueprint('main', __name__)
 proc = Process()
 
+
 @main.route('/')
 def index():
     return redirect(url_for('main.new_events'))
@@ -18,28 +19,28 @@ def index():
 @login_required
 def new_events():
     events = db.get_relevant_events()
-    return render_template("events.html", events=events, crawling=proc.is_alive())
+    return render_template("events.html", events=sorted(events, key=lambda e: e.event_date), crawling=proc.is_alive())
 
 
 @main.route('/past_events')
 @login_required
 def past_events():
     events = db.get_irrelevant_events()
-    return render_template("events.html", events=events, crawling=proc.is_alive())
+    return render_template("events.html", events=sorted(events, key=lambda e: e.event_date, reverse=True), crawling=proc.is_alive())
 
 
 @main.route('/approved_events')
 @login_required
 def approved_events():
     events = db.get_approved_events()
-    return render_template("events.html", events=events, crawling=proc.is_alive())
+    return render_template("events.html", events=sorted(events, key=lambda e: e.event_date), crawling=proc.is_alive())
 
 
 @main.route('/declined_events')
 @login_required
 def declined_events():
     events = db.get_declined_events()
-    return render_template("events.html", events=events, crawling=proc.is_alive())
+    return render_template("events.html", events=sorted(events, key=lambda e: e.event_date), crawling=proc.is_alive())
 
 
 @main.route('/approve_event', methods=['POST'])

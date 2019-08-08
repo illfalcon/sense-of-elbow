@@ -17,6 +17,7 @@ class Landing:
         self.rowid = rowid
         self.url = url
 
+
 class MyDatabase:
     def __init__(self):
         self.con = None

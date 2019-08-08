@@ -16,7 +16,6 @@ def login():
 def login_post():
     login = request.form.get('login')
     password = request.form.get('password')
-    print(login, ' ', password)
     if not login or not password:
         flash('Проверьте введённые данные и попробуйте снова.')
         return redirect(url_for('auth.login'))

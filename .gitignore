@@ -109,3 +109,4 @@ venv.bak/
 .flaskenv
 config.py
 handlebars-v4.1.2.js
+Dockerfile
