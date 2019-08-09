@@ -6,6 +6,7 @@ import html2text
 import datetime
 from utils.str import find_hash
 import magic
+import vk
 
 
 def is_webpage(url):
@@ -31,6 +32,62 @@ def is_url_relevant(url, host):
     return False
 
 
+# def is_landing_page(url, db):
+#     event_pages = list()
+#     try:
+#         r = requests.get(url, allow_redirects=False, timeout=(30, 60))
+#     except requests.exceptions.Timeout:
+#         print("request timed out: ", url)
+#         return
+#     except requests.exceptions.RequestException as e:
+#         print("exception occurred", e)
+#         return
+#     links = BeautifulSoup(r.content, 'html.parser', parse_only=SoupStrainer('a'))
+#     for link in list(links)[0:51]:
+#         if link.has_attr('href'):
+#             new_url = urljoin(url, link['href'])
+#             host = urlsplit(url).netloc
+#             if is_url_relevant(new_url, host):
+#                 if is_webpage(new_url):
+#                     try:
+#                         req = requests.get(new_url, allow_redirects=False, timeout=(30, 60))
+#                     except requests.exceptions.Timeout:
+#                         print("request timed out: ", url)
+#                         continue
+#                     except requests.exceptions.RequestException as e:
+#                         print("exception occurred", e)
+#                         continue
+#                     events = parse_with_no_db(req.text, new_url)
+#                     if len(events) > 0:
+#                         event_pages.append(new_url)
+#     if len(event_pages) >= len(links)/3:
+#         return True
+#     return False
+
+
+def parse_vk(url, db):
+    session = vk.Session(access_token='ec103cffec103cffec103cffc5ec7c175deec10ec103cffb15ca3968351c46fffaf9426')
+    vkapi = vk.API(session)
+    dom = urlsplit(url).path
+    posts = vkapi.wall.get(domain=dom[1:], v='5.100', count=20)['items']
+    h = find_hash(posts[0]['text'])
+    old = db.get_url_hash(url)
+    if old == h:
+        print('unchanged')
+        return
+    db.set_url_unparsed(url)
+    db.set_url_hash(h, url)
+    for post in posts:
+        events = extractor.extract_events_from_vk(post)
+        for e in events:
+            eventtext = e[0]
+            date = e[1]
+            h = find_hash(eventtext)
+            if not db.contains_event(h):
+                db.add_event(eventtext, h, url, date)
+    db.set_url_parsed(url)
+
+
 def crawl(depth, queue, db):
     db.create_visited()
     while len(queue) > 0:
@@ -41,6 +98,9 @@ def crawl(depth, queue, db):
                 # TODO: add if modified check
                 if not db.contains_url(url):
                     db.add_url(url, "")
+                if urlsplit(url).netloc == 'vk.com' or urlsplit(url).netloc == 'vkontakte.ru':
+                    parse_vk(url, db)
+                    continue
                 try:
                     r = requests.get(url, allow_redirects=False, timeout=(30, 60))
                 except requests.exceptions.Timeout:
@@ -59,7 +119,8 @@ def crawl(depth, queue, db):
                 db.set_url_hash(h, url)
                 parse(r.text, url, db)
                 db.set_url_parsed(url)
-                for link in BeautifulSoup(r.content, 'html.parser', parse_only=SoupStrainer('a')):
+                links = BeautifulSoup(r.content, 'html.parser', parse_only=SoupStrainer('a'))
+                for link in list(links)[:51]:
                     if link.has_attr('href'):
                         new_url = urljoin(url, link['href'])
                         if not db.was_visited(new_url):
@@ -73,6 +134,13 @@ def crawl(depth, queue, db):
             print(e)
             continue
     db.drop_visited()
+
+
+# def parse_with_no_db(html, url):
+#     doc = extractor.parse_html(html)
+#     # events = extractor.extract_events(doc)
+#     events = extractor.extract_events_better(doc, url)
+#     return events
 
 
 def parse(html, url, db):

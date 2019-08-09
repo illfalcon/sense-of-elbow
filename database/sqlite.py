@@ -32,7 +32,7 @@ class MyDatabase:
 
     def sql_create_tables(self):
         self.cursor_obj.execute(
-            "CREATE TABLE IF NOT EXISTS landings (url TEXT NOT NULL, hash TEXT, name TEXT)"
+            "CREATE TABLE IF NOT EXISTS landings (url TEXT NOT NULL)"
         )
         self.cursor_obj.execute(
             "CREATE TABLE IF NOT EXISTS webpages (url TEXT NOT NULL, hash TEXT NOT NULL, parsed INTEGER NOT NULL)"
@@ -75,11 +75,27 @@ class MyDatabase:
         )
         self.con.commit()
 
-    def add_landing(self, url, hash, name):
+    def add_landing(self, url):
         self.cursor_obj.execute(
-            "INSERT into landings (url, hash, name) VALUES (?, ?, ?)", (url, hash, name)
+            "INSERT into landings (url) VALUES (?)", (url, )
         )
         self.con.commit()
+
+    # def make_landing(self, url):
+    #     self.cursor_obj.execute(
+    #         "UPDATE landings set is_landing = 1 where url = ?", (url,)
+    #     )
+    #     self.con.commit()
+
+    # def is_landing(self, url):
+    #     self.cursor_obj.execute(
+    #         "select * from landings where url = ?", (url,)
+    #     )
+    #     rows = self.cursor_obj.fetchall()
+    #     if rows is not None:
+    #         if len(rows) > 0:
+    #             return rows[0][1] == 1
+    #     return False
 
     def remove_landing(self, rowid):
         self.cursor_obj.execute(

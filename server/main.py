@@ -63,7 +63,7 @@ def decline_event():
 @login_required
 def add_landing():
     url = request.form.get('url')
-    db.add_landing(url, "", "")
+    db.add_landing(url)
     return redirect(url_for('main.landings'))
 
 
