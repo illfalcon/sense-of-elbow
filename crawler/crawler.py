@@ -66,7 +66,7 @@ def is_url_relevant(url, host):
 
 
 def parse_vk(url, db):
-    session = vk.Session(access_token='ec103cffec103cffec103cffc5ec7c175deec10ec103cffb15ca3968351c46fffaf9426')
+    session = vk.Session(access_token='access_token')
     vkapi = vk.API(session)
     dom = urlsplit(url).path
     posts = vkapi.wall.get(domain=dom[1:], v='5.100', count=20)['items']
