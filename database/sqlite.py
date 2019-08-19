@@ -6,7 +6,7 @@ from sqlite3 import Error
 
 class Event:
     def __init__(self, rowid, url, article, event_date):
-        self.rowid = rowid
+        self.id = rowid
         self.url = url
         self.article = article
         self.event_date = event_date
@@ -188,10 +188,11 @@ class MyDatabase:
         year = n.year
         month = n.month
         day = n.day
-        self.cursor_obj.execute(
+        cursor_obj = self.con.cursor()
+        cursor_obj.execute(
             "select rowid, url, article, event_date from events where event_date >= ? and approved is null", (datetime.date(year, month, day),)
         )
-        rows = self.cursor_obj.fetchall()
+        rows = cursor_obj.fetchall()
         res = []
         if rows is not None:
             for r in rows:
@@ -203,11 +204,12 @@ class MyDatabase:
         year = n.year
         month = n.month
         day = n.day
-        self.cursor_obj.execute(
+        cursor_obj = self.con.cursor()
+        cursor_obj.execute(
             "select rowid, url, article, event_date from events where event_date < ? and approved is null",
             (datetime.date(year, month, day),)
         )
-        rows = self.cursor_obj.fetchall()
+        rows = cursor_obj.fetchall()
         res = []
         if rows is not None:
             for r in rows:
@@ -233,10 +235,11 @@ class MyDatabase:
         self.con.commit()
 
     def get_approved_events(self):
-        self.cursor_obj.execute(
+        cursor_obj = self.con.cursor()
+        cursor_obj.execute(
             "select rowid, url, article, event_date from events where approved == 1"
         )
-        rows = self.cursor_obj.fetchall()
+        rows = cursor_obj.fetchall()
         res = []
         if rows is not None:
             for r in rows:
@@ -244,10 +247,11 @@ class MyDatabase:
         return res
 
     def get_declined_events(self):
-        self.cursor_obj.execute(
+        cursor_obj = self.con.cursor()
+        cursor_obj.execute(
             "select rowid, url, article, event_date from events where approved == 0"
         )
-        rows = self.cursor_obj.fetchall()
+        rows = cursor_obj.fetchall()
         res = []
         if rows is not None:
             for r in rows:

@@ -4,6 +4,8 @@ from .server import db
 from crawler import crawler
 from collections import deque
 from multiprocessing import Process
+from flask import jsonify
+import jsonpickle
 
 
 main = Blueprint('main', __name__)
@@ -13,6 +15,67 @@ proc = Process()
 @main.route('/')
 def index():
     return redirect(url_for('main.new_events'))
+
+
+@main.route('/api/is_refreshing')
+def is_refreshing():
+    refreshing = proc.is_alive()
+    return jsonify(isRefreshing = refreshing)
+
+
+@main.route('/api/new_events')
+def api_new_events():
+    events = db.get_relevant_events()
+    events.sort(key=lambda e: e.event_date)
+    json = jsonpickle.encode(events)
+    print(json)
+    return json
+
+
+@main.route('/api/past_events')
+def api_past_events():
+    events = db.get_irrelevant_events()
+    events.sort(key=lambda e: e.event_date, reverse=True)
+    json = jsonpickle.encode(events)
+    print(json)
+    return json
+
+
+@main.route('/api/accepted_events')
+def api_accepted_events():
+    events = db.get_approved_events()
+    events.sort(key=lambda e: e.event_date)
+    json = jsonpickle.encode(events)
+    print(json)
+    return json
+
+
+@main.route('/api/declined_events')
+def api_declined_events():
+    events = db.get_declined_events()
+    events.sort(key=lambda e: e.event_date)
+    json = jsonpickle.encode(events)
+    print(json)
+    return json
+
+
+@main.route('/api/landings')
+def api_landings():
+    events = db.get_all_landings()
+    events.sort(key=lambda e: e.event_date)
+    json = jsonpickle.encode(events)
+    print(json)
+    return json
+
+
+@main.route('/api/set_approved', methods=['POST'])
+def api_set_approved():
+    rowid = request.args.get('id')
+    db.set_event_approved(rowid)
+    resp = {
+        'success': True
+    }
+    return jsonpickle.encode(resp)
 
 
 @main.route('/new_events')

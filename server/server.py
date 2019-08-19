@@ -3,9 +3,11 @@ from config import Config
 from database.sqlite import MyDatabase
 from flask_login import LoginManager
 from .models import User
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config.from_object(Config)
+CORS(app)
 
 db = MyDatabase()
 db.start()

@@ -103,10 +103,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-.idea
-
 *.db
 .flaskenv
 config.py
 handlebars-v4.1.2.js
 Dockerfile
+.idea/
