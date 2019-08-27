@@ -103,6 +103,35 @@ def extract_events_better(doc, url):
     return res
 
 
+def extract_events_simple(doc, url):
+    year_in_case = year_from_url(url)
+    res = list()
+    dates = datefinder.find_dates(doc)
+    default_year = find_year(dates, year_in_case)
+    filtered_dates = list(filter(lambda d: (d.fact.day is not None) & (d.fact.month is not None), dates))
+    if len(filtered_dates) > 0 and len(filtered_dates) < 5:
+        eventtext = eventfinder.find_event_simple(doc)
+        if eventtext != "":
+            y = find_year(dates, default_year)
+            filtered_dates.sort(key=lambda d: (d.fact.year if d.fact.year is not None
+                                                else y,
+                                                d.fact.month, d.fact.day), reverse=True)
+
+            year = filtered_dates[0].fact.year if filtered_dates[0].fact.year is not None else y
+            month = filtered_dates[0].fact.month
+            day = filtered_dates[0].fact.day
+            try:
+                date = datetime.date(year, month, day)
+            except ValueError:
+                if month > 12:
+                    month = 12
+                _, day = monthrange(year, month)
+                date = datetime.date(year, month, day)
+            res.append((eventtext, date))
+    remove_tuples(res)
+    return res
+
+
 def find_year(dates, default_year):
     year = 0
     for d in dates:

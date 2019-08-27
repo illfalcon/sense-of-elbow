@@ -1,7 +1,12 @@
+from flask import Flask
+from .models import *
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+db = SQLAlchemy(app)
 
 class User(db.Model):
     __tablename__ = "users"
@@ -40,3 +45,15 @@ class Webpage(db.Model):
     hash = db.Column(db.String, nullable=False, default='')
     parsed = db.Column(db.Integer, nullable=False)
     # landing_id = db.Column(db.Integer, db.ForeignKey("landings.id"), nullable=False)
+
+
+db.create_all()
+import newcrawler.crawler
+
+newcrawler.crawler.assess()
+
+
+@app.route("/")
+def index():
+    flights = Webpage.query.all()
+    return flights
