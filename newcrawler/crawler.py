@@ -50,11 +50,13 @@ def parse_newspaper(url):
             article.parse()
             # print(article.url, article.text)
             text = extractor.normalize_newlines(article.text)
-            events = extractor.extract_events_better(text, article.url)
+            events = extractor.extract_events_better_newspaper(text, article.url)
             for e in events:
-                e = Event(url=article.url, article=e[0], hash='', event_date=e[1])
-                db.session.add(e)
-                db.session.commit()
+                h = find_hash(e[0])
+                if not Event.query.filter_by(hash=h).first():
+                    e = Event(url=article.url, article=e[0], hash=h, event_date=e[1])
+                    db.session.add(e)
+                    db.session.commit()
 
 
 def parse_page(url):
