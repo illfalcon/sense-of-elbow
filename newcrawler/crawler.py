@@ -105,6 +105,7 @@ def assess():
             parse_vk(landing.url)
         else:
             parse_page(landing.url)
+    print('finished assesing')
 
 
 def determine_type(landing):
