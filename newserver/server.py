@@ -81,7 +81,7 @@ class PastEventsResource(Resource):
         year = n.year
         month = n.month
         day = n.day
-        events = Event.query.filter(Event.event_date < datetime.date(year, month, day).strftime('%d-%m-%Y'), Event.approved == None).limit(20).all()
+        events = Event.query.filter(Event.event_date < datetime.date(year, month, day).strftime('%Y-%m-%d'), Event.approved == None).order_by(Event.event_date.desc()).limit(20).all()
         return {'events': [e.to_dict() for e in events]}, 200
 
 
@@ -91,7 +91,7 @@ class NewEventsResource(Resource):
         year = n.year
         month = n.month
         day = n.day
-        events = Event.query.filter(Event.event_date >= datetime.date(year, month, day).strftime('%d-%m-%Y'), Event.approved == None).limit(20).all()
+        events = Event.query.filter(Event.event_date >= datetime.date(year, month, day).strftime('%Y-%m-%d'), Event.approved == None).order_by(Event.event_date).limit(20).all()
         return {'events': [e.to_dict() for e in events]}, 200
 
 
@@ -145,7 +145,7 @@ class LandingsResource(Resource):
         landing = Landing(url=args['url'])
         db.session.add(landing)
         db.session.commit()
-        return {'success': True}, 201
+        return {'success': True, 'landing': landing.to_dict()}, 201
 
     def delete(self):
         parser = reqparse.RequestParser()

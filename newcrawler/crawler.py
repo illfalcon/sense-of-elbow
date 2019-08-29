@@ -44,12 +44,27 @@ def parse_newspaper(url):
     for article in np.articles:
         if not Webpage.query.filter_by(url=article.url).first():
             page = Webpage(url=article.url, hash='', parsed=True)
+            try:
+                r = requests.get(article.url, allow_redirects=False, timeout=(30, 60))
+            except requests.exceptions.Timeout:
+                print("request timed out: ", article.url)
+                return
+            except requests.exceptions.RequestException as e:
+                print("exception occurred", e)
+                return
+            clean_text = html2text.html2text(r.text)
+            h = find_hash(clean_text)
+            old = page.hash
+            if old == h:
+                return
+            page.hash = h
+            doc = extractor.parse_html(r.text)
             db.session.add(page)
             db.session.commit()
-            article.download()
-            article.parse()
+            # article.download()
+            # article.parse()
             # print(article.url, article.text)
-            text = extractor.normalize_newlines(article.text)
+            text = extractor.normalize_newlines(doc)
             events = extractor.extract_events_better_newspaper(text, article.url)
             for e in events:
                 h = find_hash(e[0])

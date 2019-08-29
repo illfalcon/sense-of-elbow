@@ -110,6 +110,8 @@ def extract_events_better_newspaper(doc, url):
         return []
     lines = doc.split('\n')
     year_in_case = year_from_url(url)
+    # if not year_in_case:
+    #     year_in_case = find_year(datefinder.find_dates(html), None)
     res = list()
     for i, line in enumerate(lines):
         dates = datefinder.find_dates(line)
@@ -184,6 +186,17 @@ def extract_events_from_vk(post):
             eventtext = eventfinder.find_event([post['text']], 0)
             # eventtext = post['text']
             if eventtext != "":
-                res.append((post['text'], date))
+                res.append((clean_vk_text(post['text']), date))
     return res
 
+
+def clean_vk_text(text):
+    pat1 = re.compile('\[.*?\|(.+?)]')
+    m = pat1.findall(text)
+    pat = re.compile('\[.*?\|.*?]')
+    if m:
+        #     found = m.groups()
+        print(m)
+        for g in m:
+            text = pat.sub(g, text, 1)
+    return text
