@@ -40,8 +40,11 @@ def parse_vk(url):
 
 
 def parse_newspaper(url):
+    domain = urlsplit(url).hostname
     np = newspaper.build(url, language='ru', memoize_articles=False)
     for article in np.articles:
+        if urlsplit(article.url).hostname != domain:
+            continue
         if not Webpage.query.filter_by(url=article.url).first():
             page = Webpage(url=article.url, hash='', parsed=True)
             try:

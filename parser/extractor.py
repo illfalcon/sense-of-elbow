@@ -180,7 +180,7 @@ def extract_events_from_vk(post):
                 date = datetime.date(year, month, day)
             res.append((eventtext, date))
     else:
-        d = datefinder.find_dates_words(post['text'], dt.utcfromtimestamp(post['date']))
+        d = datefinder.find_dates_words(clean_vk_text(post['text']), dt.utcfromtimestamp(post['date']))
         if d is not None:
             date = datetime.date(year=d.year, month=d.month, day=d.day)
             eventtext = eventfinder.find_event([post['text']], 0)
