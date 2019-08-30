@@ -142,7 +142,7 @@ class LandingsResource(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('url', type=str, required=True)
         args = parser.parse_args()
-        landing = Landing(url=args['url'])
+        landing = Landing(url=args['url'].strip())
         db.session.add(landing)
         db.session.commit()
         return {'success': True, 'landing': landing.to_dict()}, 201

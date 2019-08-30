@@ -76,7 +76,8 @@ def parse_newspaper(url):
                         e = Event(url=article.url, article=e[0], hash=h, event_date=e[1])
                         db.session.add(e)
                         db.session.commit()
-        except:
+        except Exception as e:
+            print(e.with_traceback())
             continue
 
 
@@ -127,7 +128,8 @@ def assess():
                 parse_vk(landing.url)
             else:
                 parse_page(landing.url)
-        except:
+        except Exception as e:
+            print(e.with_traceback())
             continue
     print('finished assesing')
 
