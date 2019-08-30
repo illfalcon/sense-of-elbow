@@ -32,3 +32,9 @@ def find_event(lines, beg):
             return '\n'.join(lines[up:beg+1])
         up -= 1
     return ""
+
+
+def find_event_simple(text):
+    if contains_invitation(text):
+        return text
+    return ""

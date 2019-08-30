@@ -1,4 +1,4 @@
-from server.server import app
+from newserver.server import app
 import os
 
 if __name__ == '__main__':

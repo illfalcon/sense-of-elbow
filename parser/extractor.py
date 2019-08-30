@@ -103,6 +103,44 @@ def extract_events_better(doc, url):
     return res
 
 
+def extract_events_better_newspaper(doc, url):
+    all_dates = datefinder.find_dates(doc)
+    filtered_dates = list(filter(lambda d: (d.fact.day is not None) & (d.fact.month is not None), all_dates))
+    if len(filtered_dates) > 5:
+        return []
+    lines = doc.split('\n')
+    year_in_case = year_from_url(url)
+    # if not year_in_case:
+    #     year_in_case = find_year(datefinder.find_dates(html), None)
+    res = list()
+    for i, line in enumerate(lines):
+        dates = datefinder.find_dates(line)
+        dates_for_year = datefinder.find_dates('\n'.join(lines[i - 5:i + 6]))
+        default_year = find_year(dates_for_year, year_in_case)
+        filtered_dates = list(filter(lambda d: (d.fact.day is not None) & (d.fact.month is not None), dates))
+        if 0 < len(filtered_dates):
+            eventtext = eventfinder.find_event(lines, i)
+            if eventtext != "":
+                y = find_year(dates, default_year)
+                filtered_dates.sort(key=lambda d: (d.fact.year if d.fact.year is not None
+                                                   else y,
+                                                   d.fact.month, d.fact.day), reverse=True)
+
+                year = filtered_dates[0].fact.year if filtered_dates[0].fact.year is not None else y
+                month = filtered_dates[0].fact.month
+                day = filtered_dates[0].fact.day
+                try:
+                    date = datetime.date(year, month, day)
+                except ValueError:
+                    if month > 12:
+                        month = 12
+                    _, day = monthrange(year, month)
+                    date = datetime.date(year, month, day)
+                res.append((eventtext, date))
+    remove_tuples(res)
+    return res
+
+
 def find_year(dates, default_year):
     year = 0
     for d in dates:
@@ -140,14 +178,25 @@ def extract_events_from_vk(post):
                     month = 12
                 _, day = monthrange(year, month)
                 date = datetime.date(year, month, day)
-            res.append((eventtext, date))
+            res.append((clean_vk_text(post['text']), date))
     else:
-        d = datefinder.find_dates_words(post['text'], dt.utcfromtimestamp(post['date']))
+        d = datefinder.find_dates_words(clean_vk_text(post['text']), dt.utcfromtimestamp(post['date']))
         if d is not None:
             date = datetime.date(year=d.year, month=d.month, day=d.day)
             eventtext = eventfinder.find_event([post['text']], 0)
             # eventtext = post['text']
             if eventtext != "":
-                res.append((post['text'], date))
+                res.append((clean_vk_text(post['text']), date))
     return res
 
+
+def clean_vk_text(text):
+    pat1 = re.compile('\[.*?\|(.+?)]')
+    m = pat1.findall(text)
+    pat = re.compile('\[.*?\|.*?]')
+    if m:
+        #     found = m.groups()
+        print(m)
+        for g in m:
+            text = pat.sub(g, text, 1)
+    return text
