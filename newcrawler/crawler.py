@@ -18,7 +18,7 @@ def parse_vk(url):
     vkapi = vk.API(session)
     dom = urlsplit(url).path
     posts = vkapi.wall.get(domain=dom[1:], v='5.100', count=20)['items']
-    h = find_hash(posts[0]['text'])
+    h = find_hash(posts[1]['text'])
     old = webpage.hash
     if old == h:
         print('unchanged')

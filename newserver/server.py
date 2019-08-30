@@ -252,6 +252,8 @@ class LoginTokenResource(Resource):
 
 class RegisterResource(Resource):
     def post(self):
+        if len(User.query.all()) > 0:
+            return {'success': False, 'error': 'number of users is above the limit already'}, 409
         parser = reqparse.RequestParser()
         parser.add_argument('login', type=str, required=True)
         parser.add_argument('password', type=str, required=True)
@@ -275,9 +277,12 @@ class RegisterResource(Resource):
 class LogoutResource(Resource):
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('token', type=str, required=True)
+        parser.add_argument('Authentication', type=str, location='headers')
         args = parser.parse_args()
-        session = Session.query.get(args['token'])
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'you cannto perform this action'}, 401
+        session = Session.query.get(args['Authentication'])
         if not session:
             return {'success': False, 'error': 'session not found'}, 404
         db.session.delete(session)
@@ -290,9 +295,21 @@ proc = Process()
 
 class RenewResourse(Resource):
     def get(self):
+        # parser = reqparse.RequestParser()
+        # parser.add_argument('Authentication', type=str, location='headers')
+        # args = parser.parse_args()
+        # user = check_auth_token(args['Authentication'])
+        # if not user:
+        #     return {'success': False, 'error': 'Unauthorized access'}, 401
         return {'isRefreshing': proc.is_alive()}, 200
 
     def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         print('accepted request')
         global proc
         if not proc.is_alive():
