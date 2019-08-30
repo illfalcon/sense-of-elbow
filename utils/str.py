@@ -1,5 +1,7 @@
 import hashlib
 from collections import deque
+import string
+import random
 
 
 def find_hash(text):
@@ -25,3 +27,13 @@ def remove_tuples(tuples):
             if tup[0] in q[0]:
                 tuples.remove(tup)
                 break
+
+
+def compare_passwords(p1, p2):
+    return find_hash(p1) == p2
+
+
+def random_string(len=10):
+    """Generate a random string of letters and digits """
+    lettersAndDigits = string.ascii_letters + string.digits
+    return ''.join(random.choice(lettersAndDigits) for _ in range(len))

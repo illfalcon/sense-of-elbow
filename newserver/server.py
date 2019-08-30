@@ -6,6 +6,7 @@ import datetime
 from multiprocessing import Process
 import json
 from flask_cors import CORS
+from utils.str import compare_passwords, random_string, find_hash
 
 
 app = Flask(__name__)
@@ -27,6 +28,8 @@ class Session(db.Model):
     __tablename__ = "sessions"
     id = db.Column(db.String, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user = db.relationship("User", backref=db.backref("sessions"))
+    expires = db.Column(db.DateTime, nullable=False)
 
 
 class Event(db.Model):
@@ -77,6 +80,12 @@ def output_json(data, code, headers=None):
 
 class PastEventsResource(Resource):
     def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         n = datetime.datetime.now()
         year = n.year
         month = n.month
@@ -87,6 +96,12 @@ class PastEventsResource(Resource):
 
 class NewEventsResource(Resource):
     def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         n = datetime.datetime.now()
         year = n.year
         month = n.month
@@ -97,12 +112,24 @@ class NewEventsResource(Resource):
 
 class ApprovedEventsResource(Resource):
     def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         events = Event.query.filter(Event.approved == 1).limit(20).all()
         return {'events': [e.to_dict() for e in events]}, 200
 
 
 class DeclinedEventsResource(Resource):
     def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         events = Event.query.filter(Event.approved == 0).limit(20).all()
         return {'events': [e.to_dict() for e in events]}, 200
 
@@ -111,6 +138,11 @@ class SetApprovedResource(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('id', type=int, required=True)
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         args = parser.parse_args()
         event = Event.query.get(args['id'])
         if not event:
@@ -124,6 +156,11 @@ class SetDeclinedResource(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('id', type=int, required=True)
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         args = parser.parse_args()
         event = Event.query.get(args['id'])
         if not event:
@@ -135,12 +172,23 @@ class SetDeclinedResource(Resource):
 
 class LandingsResource(Resource):
     def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         landings = Landing.query.all()
         return {'landings': [l.to_dict() for l in landings]}, 200
 
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('url', type=str, required=True)
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         args = parser.parse_args()
         landing = Landing(url=args['url'].strip())
         db.session.add(landing)
@@ -150,11 +198,91 @@ class LandingsResource(Resource):
     def delete(self):
         parser = reqparse.RequestParser()
         parser.add_argument('id', type=int, required=True)
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
         args = parser.parse_args()
         landing = Landing.query.get(args['id'])
         db.session.delete(landing)
         db.session.commit()
         return {'success': True}, 201
+
+
+def check_auth_token(token):
+    if not token:
+        return None
+    now = datetime.datetime.now()
+    session = Session.query.get(token)
+    if not session or now > session.expires:
+        return None
+    return session.user
+
+
+class LoginResource(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('login', type=str, required=True)
+        parser.add_argument('password', type=str, required=True)
+        args = parser.parse_args()
+        user = User.query.filter_by(login=args['login']).first()
+        if not user:
+            return {'success': False, 'error': 'user with login ' + args['login'] + ' not found'}, 404
+        if not compare_passwords(args['password'], user.password):
+            return {'success': False, 'error': 'wrong password'}, 400
+        token = random_string(16)
+        now = datetime.datetime.now()
+        session = Session(id=token, user=user, expires=now+datetime.timedelta(days=+30))
+        db.session.add(session)
+        db.session.commit()
+        return {'success': True, 'token': token}
+
+
+class LoginTokenResource(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('Authentication', type=str, location='headers')
+        args = parser.parse_args()
+        user = check_auth_token(args['Authentication'])
+        if not user:
+            return {'success': False, 'error': 'Unauthorized access'}, 401
+        return {'success': True}
+
+
+class RegisterResource(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('login', type=str, required=True)
+        parser.add_argument('password', type=str, required=True)
+        args = parser.parse_args()
+        user = User.query.filter_by(login=args['login']).first()
+        if user:
+            return {'success': False, 'error': 'user with login ' + args['login'] + ' already exists'}, 409
+        password = find_hash(args['password'])
+        login = args['login']
+        newUser = User(login=login, password=password)
+        db.session.add(newUser)
+        db.session.commit()
+        token = random_string(16)
+        now = datetime.datetime.now()
+        session = Session(id=token, user=newUser, expires=now + datetime.timedelta(days=+30))
+        db.session.add(session)
+        db.session.commit()
+        return {'success': True, 'token': token}
+
+
+class LogoutResource(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('token', type=str, required=True)
+        args = parser.parse_args()
+        session = Session.query.get(args['token'])
+        if not session:
+            return {'success': False, 'error': 'session not found'}, 404
+        db.session.delete(session)
+        db.session.commit()
+        return {'success': True}
 
 
 proc = Process()
@@ -184,4 +312,8 @@ api.add_resource(DeclinedEventsResource, '/api/declined_events')
 api.add_resource(SetApprovedResource, '/api/set_approved')
 api.add_resource(SetDeclinedResource, '/api/set_declined')
 api.add_resource(LandingsResource, '/api/landings')
+api.add_resource(LoginResource, '/api/login')
+api.add_resource(LogoutResource, '/api/logout')
+api.add_resource(RegisterResource, '/api/register')
+api.add_resource(LoginTokenResource, '/api/login_token')
 api.add_resource(RenewResourse, '/api/renew')
