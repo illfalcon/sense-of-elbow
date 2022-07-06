@@ -13,7 +13,7 @@ html2text==2018.1.9
 idna==2.8
 itsdangerous==1.1.0
 Jinja2==2.10.1
-lxml==4.4.0
+lxml==4.9.1
 MarkupSafe==1.1.1
 natasha==0.10.0
 pymorphy2==0.8
